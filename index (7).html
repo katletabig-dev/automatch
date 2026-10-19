@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AutoMatch — Профессиональный подбор и пригон автомобилей</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #060913;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(37, 99, 235, 0.2) 0px, transparent 50%),
+                radial-gradient(at 90% 30%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        .option-btn {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:hover, .option-btn:active {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(59, 130, 246, 0.35);
+        }
+        .fade-in {
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hero-banner {
+            background: linear-gradient(180deg, rgba(6, 9, 19, 0.4) 0%, rgba(6, 9, 19, 0.95) 100%), 
+                        url('https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-blue-600">
+
+    <!-- Шапка -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-[#060913]/80 border-b border-white/5">
+        <div class="max-w-md mx-auto px-4 py-3.5 flex justify-between items-center">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i data-lucide="car-front" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">AutoMatch</span>
+                    <span class="text-[10px] uppercase tracking-wider font-bold text-blue-400 block -mt-1">Подбор и пригон</span>
+                </div>
+            </div>
+            <a href="#quiz-container" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition shadow-lg shadow-blue-600/30">
+                Оставить заявку
+            </a>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="flex-1 max-w-md mx-auto w-full px-4 pt-4 pb-10 space-y-6">
+
+        <!-- Премиальный Hero-блок -->
+        <div class="hero-banner rounded-3xl p-6 text-center space-y-4 relative overflow-hidden shadow-2xl">
+            <div class="inline-flex items-center space-x-1.5 bg-blue-500/20 border border-blue-500/30 px-3 py-1 rounded-full text-xs text-blue-300 font-medium backdrop-blur-md">
+                <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-400"></i>
+                <span>Россия • Корея • Китай • Япония</span>
+            </div>
+            
+            <div class="space-y-2">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight text-white drop-shadow-md">
+                    Подбор в РФ и пригон <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">из-за границы</span>
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-300 max-w-xs mx-auto leading-relaxed drop-shadow">
+                    Экономьте до 30% стоимости при заказе авто напрямую с зарубежных аукционов и заводов.
+                </p>
+            </div>
+
+            <div class="pt-2">
+                <a href="#quiz-container" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-2xl font-bold text-sm shadow-xl shadow-blue-600/40 flex items-center justify-center space-x-2 transition transform active:scale-[0.99] text-white">
+                    <span>Оставить заявку</span>
+                    <i data-lucide="arrow-down" class="w-4 h-4 animate-bounce"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Квиз -->
+        <div id="quiz-container" class="glass-card rounded-3xl p-5 sm:p-6 relative overflow-hidden scroll-mt-20">
+            
+            <div id="progress-wrapper" class="mb-5">
+                <div class="flex justify-between items-center text-xs font-medium text-slate-400 mb-2">
+                    <span id="step-label" class="text-blue-400 font-semibold">Шаг 1 из 5</span>
+                    <span id="progress-percent">20%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-300" style="width: 20%"></div>
+                </div>
+            </div>
+
+            <!-- ШАГ 0 -->
+            <div id="step-0" class="fade-in space-y-4">
+                <div class="space-y-1">
+                    <h2 class="text-lg font-bold text-white">Где ищем автомобиль?</h2>
+                    <p class="text-xs text-slate-400">Выберите удобный формат покупки</p>
+                </div>
+
+                <div class="space-y-2.5 pt-1">
+                    <button onclick="selectFormat('В наличии по РФ')" class="w-full option-btn p-4 rounded-2xl flex items-center justify-between text-left group">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 group-hover:bg-blue-600/30 flex items-center justify-center text-blue-400 transition">
+                                <i data-lucide="car" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm text-white">В наличии по России</div>
+                                <div class="text-xs text-slate-400">Быстрый поиск, осмотр и покупка на месте</div>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                    </button>
+
+                    <button onclick="selectFormat('🌍 Пригон из-за границы (Корея, Китай, Япония)')" class="w-full option-btn p-4 rounded-2xl flex items-center justify-between text-left group border-emerald-500/30 bg-emerald-500/5">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 group-hover:bg-emerald-600/30 flex items-center justify-center text-emerald-400 transition">
+                                <i data-lucide="plane" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-sm text-white flex items-center space-x-2">
+                                    <span>Пригон под заказ</span>
+                                    <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-medium">Выгода до 30%</span>
+                                </div>
+                                <div class="text-xs text-slate-400">Корея, Китай, Япония, ОАЭ с растаможкой</div>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-emerald-400"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ШАГ 1 -->
+            <div id="step-1" class="hidden fade-in space-y-4">
+                <div class="space-y-1">
+                    <h2 class="text-lg font-bold text-white">Какую марку рассматриваете?</h2>
+                    <p class="text-xs text-slate-400">Выберите из популярных или укажите свою</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                    <button onclick="selectBrand('Toyota')" class="option-btn p-3.5 rounded-2xl flex items-center space-x-3 text-left group">
+                        <div class="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-blue-600/30 flex items-center justify-center text-blue-400 transition"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                        <div><div class="font-bold text-sm text-white">Toyota</div><div class="text-[10px] text-slate-400">Япония</div></div>
+                    </button>
+                    <button onclick="selectBrand('Kia')" class="option-btn p-3.5 rounded-2xl flex items-center space-x-3 text-left group">
+                        <div class="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-blue-600/30 flex items-center justify-center text-emerald-400 transition"><i data-lucide="zap" class="w-5 h-5"></i></div>
+                        <div><div class="font-bold text-sm text-white">Kia</div><div class="text-[10px] text-slate-400">Корея</div></div>
+                    </button>
+                    <button onclick="selectBrand('BMW')" class="option-btn p-3.5 rounded-2xl flex items-center space-x-3 text-left group">
+                        <div class="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-blue-600/30 flex items-center justify-center text-indigo-400 transition"><i data-lucide="gauge" class="w-5 h-5"></i></div>
+                        <div><div class="font-bold text-sm text-white">BMW</div><div class="text-[10px] text-slate-400">Германия</div></div>
+                    </button>
+                    <button onclick="selectBrand('Hyundai')" class="option-btn p-3.5 rounded-2xl flex items-center space-x-3 text-left group">
+                        <div class="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-blue-600/30 flex items-center justify-center text-cyan-400 transition"><i data-lucide="award" class="w-5 h-5"></i></div>
+                        <div><div class="font-bold text-sm text-white">Hyundai</div><div class="text-[10px] text-slate-400">Корея</div></div>
+                    </button>
+                    <button onclick="selectBrand('Geely / Zeekr')" class="option-btn p-3.5 rounded-2xl flex items-center space-x-3 text-left group">
+                        <div class="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-blue-600/30 flex items-center justify-center text-amber-400 transition"><i data-lucide="cpu" class="w-5 h-5"></i></div>
+                        <div><div class="font-bold text-sm text-white">Китай (EV/Гибрид)</div><div class="text-[10px] text-slate-400">Zeekr, LiXiang, Geely</div></div>
+                    </button>
+                    <button onclick="selectBrand('Lada')" class="option-btn p-3.5 rounded-2xl flex items-center space-x-3 text-left group">
+                        <div class="w-9 h-9 rounded-xl bg-slate-800 group-hover:bg-blue-600/30 flex items-center justify-center text-rose-400 transition"><i data-lucide="navigation" class="w-5 h-5"></i></div>
+                        <div><div class="font-bold text-sm text-white">Lada</div><div class="text-[10px] text-slate-400">Россия</div></div>
+                    </button>
+                </div>
+
+                <div class="pt-1">
+                    <button onclick="toggleCustomBrand()" class="w-full option-btn p-3 rounded-2xl flex items-center justify-center space-x-2 text-xs font-semibold text-slate-300">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-blue-400"></i>
+                        <span>Другая марка или модель</span>
+                    </button>
+                    <div id="custom-brand-box" class="hidden mt-2.5 flex space-x-2 fade-in">
+                        <input type="text" id="custom-brand-input" placeholder="Например: Audi, Zeekr 001..." class="flex-1 bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                        <button onclick="submitCustomBrand()" class="bg-blue-600 hover:bg-blue-500 px-4 rounded-xl font-semibold text-sm transition">Далее</button>
+                    </div>
+                </div>
+                <button onclick="goToStep(0)" class="inline-flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white pt-1"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i><span>Назад</span></button>
+            </div>
+
+            <!-- ШАГ 2 -->
+            <div id="step-2" class="hidden fade-in space-y-4">
+                <div class="space-y-1">
+                    <h2 class="text-lg font-bold text-white">Какое состояние автомобиля?</h2>
+                    <p class="text-xs text-slate-400">Выберите подходящий вариант</p>
+                </div>
+
+                <div class="space-y-2.5 pt-1">
+                    <button onclick="selectCondition('С пробегом (проверенный)')" class="w-full option-btn p-4 rounded-2xl flex items-center justify-between text-left">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400"><i data-lucide="check-circle-2" class="w-5 h-5"></i></div>
+                            <div><div class="font-bold text-sm text-white">С пробегом</div><div class="text-xs text-slate-400">Без ДТП, с чистой историей</div></div>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                    </button>
+                    <button onclick="selectCondition('Без пробега / Новый')" class="w-full option-btn p-4 rounded-2xl flex items-center justify-between text-left">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400"><i data-lucide="sparkles" class="w-5 h-5"></i></div>
+                            <div><div class="font-bold text-sm text-white">Без пробега / Новый</div><div class="text-xs text-slate-400">Прямо с завода или аукциона</div></div>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                    </button>
+                </div>
+                <button onclick="goToStep(1)" class="inline-flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white pt-1"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i><span>Назад</span></button>
+            </div>
+
+            <!-- ШАГ 3 -->
+            <div id="step-3" class="hidden fade-in space-y-4">
+                <div class="space-y-1">
+                    <h2 class="text-lg font-bold text-white">На какой бюджет ориентируетесь?</h2>
+                    <p class="text-xs text-slate-400">С учетом всех расходов (доставка и растаможка)</p>
+                </div>
+
+                <div class="space-y-2.5 pt-1">
+                    <button onclick="selectBudget('До 1.5 млн ₽')" class="w-full option-btn p-3.5 px-4 rounded-2xl flex justify-between items-center"><span class="font-semibold text-sm">До 1 500 000 ₽</span><span class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-lg">Эконом</span></button>
+                    <button onclick="selectBudget('1.5 - 2.5 млн ₽')" class="w-full option-btn p-3.5 px-4 rounded-2xl flex justify-between items-center"><span class="font-semibold text-sm">1 500 000 — 2 500 000 ₽</span><span class="text-xs text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg">Популярный</span></button>
+                    <button onclick="selectBudget('2.5 - 4 млн ₽')" class="w-full option-btn p-3.5 px-4 rounded-2xl flex justify-between items-center"><span class="font-semibold text-sm">2 500 000 — 4 000 000 ₽</span><span class="text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg">Комфорт</span></button>
+                    <button onclick="selectBudget('Более 4 млн ₽')" class="w-full option-btn p-3.5 px-4 rounded-2xl flex justify-between items-center"><span class="font-semibold text-sm">От 4 000 000 ₽ и выше</span><span class="text-xs text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg">Премиум</span></button>
+                </div>
+                <button onclick="goToStep(2)" class="inline-flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white pt-1"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i><span>Назад</span></button>
+            </div>
+
+            <!-- ШАГ 4 -->
+            <div id="step-4" class="hidden fade-in space-y-4">
+                <div class="space-y-1">
+                    <div class="inline-flex items-center space-x-1 text-emerald-400 text-xs font-semibold mb-1">
+                        <i data-lucide="check-circle" class="w-3.5 h-3.5"></i><span>Параметры успешно сформированы!</span>
+                    </div>
+                    <h2 class="text-lg font-bold text-white">Куда прислать подборку авто?</h2>
+                    <p class="text-xs text-slate-400">Оставьте номер: пришлем варианты и расчет за 10 минут</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-white/5 rounded-2xl p-3 flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-2.5">
+                        <i data-lucide="Sliders" class="w-4 h-4 text-blue-400"></i>
+                        <div><span class="text-slate-400 block text-[10px]">Ваш выбор:</span><span id="summary-text" class="font-semibold text-white">Пригон • Toyota</span></div>
+                    </div>
+                    <button onclick="goToStep(0)" class="text-blue-400 hover:underline text-[11px]">Изменить</button>
+                </div>
+
+                <div class="space-y-3 pt-1">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><i data-lucide="phone" class="w-4 h-4"></i></div>
+                        <input type="tel" id="client-phone" placeholder="+7 (999) 000-00-00" class="w-full pl-10 pr-4 py-3.5 bg-slate-900/90 border border-slate-700 rounded-2xl text-white font-medium text-sm focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <button onclick="submitLead()" id="submit-btn" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-2xl font-bold text-sm shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2 transition">
+                        <span>Оставить заявку</span><i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <button onclick="goToStep(3)" class="inline-flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white pt-1"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i><span>Назад</span></button>
+            </div>
+
+            <!-- УСПЕХ -->
+            <div id="step-success" class="hidden fade-in text-center py-6 space-y-4">
+                <div class="w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+                    <i data-lucide="check-check" class="w-8 h-8"></i>
+                </div>
+                <div class="space-y-1.5">
+                    <h2 class="text-xl font-extrabold text-white">Заявка принята в работу!</h2>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">Специалист по подбору уже формирует для вас варианты и расчет стоимости.</p>
+                </div>
+                <button onclick="location.reload()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-white/10 rounded-xl text-xs font-semibold text-slate-200 transition">Новый запрос</button>
+            </div>
+        </div>
+
+        <!-- Преимущества пригона -->
+        <div class="grid grid-cols-3 gap-2.5 text-center">
+            <div class="glass-card p-3 rounded-2xl">
+                <div class="text-blue-400 font-extrabold text-base">20-30%</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Экономия на авто</div>
+            </div>
+            <div class="glass-card p-3 rounded-2xl">
+                <div class="text-emerald-400 font-extrabold text-base">Доставка</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">До вашего города</div>
+            </div>
+            <div class="glass-card p-3 rounded-2xl">
+                <div class="text-indigo-400 font-extrabold text-base">Чистая</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Таможня РФ</div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="border-t border-white/5 py-4 text-center text-[11px] text-slate-500">AutoMatch © 2026</footer>
+
+    <script>
+        lucide.createIcons();
+
+        const SUPABASE_URL = 'https://cieeqjnjyhavzqdtmgva.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_u3ac5P_OKwXFe9-W81ymGQ_jFnKwDql';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let leadData = { format: '', brand: '', condition: '', budget: '', phone: '' };
+
+        function updateProgress(step) {
+            const labels = ['Шаг 1 из 5', 'Шаг 2 из 5', 'Шаг 3 из 5', 'Финальный шаг'];
+            const percents = ['20%', '40%', '60%', '90%'];
+            document.getElementById('step-label').innerText = labels[step - 1] || 'Финальный шаг';
+            document.getElementById('progress-percent').innerText = percents[step - 1] || '90%';
+            document.getElementById('progress-bar').style.width = percents[step - 1] || '90%';
+        }
+
+        function goToStep(stepNumber) {
+            ['step-0', 'step-1', 'step-2', 'step-3', 'step-4', 'step-success'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById('step-' + stepNumber).classList.remove('hidden');
+            if(stepNumber > 0 && stepNumber < 5) updateProgress(stepNumber);
+        }
+
+        function selectFormat(format) {
+            leadData.format = format;
+            goToStep(1);
+        }
+        function selectBrand(brand) { leadData.brand = brand; goToStep(2); }
+        function toggleCustomBrand() { document.getElementById('custom-brand-box').classList.toggle('hidden'); }
+        function submitCustomBrand() {
+            leadData.brand = document.getElementById('custom-brand-input').value.trim() || 'Другая';
+            goToStep(2);
+        }
+        function selectCondition(cond) { leadData.condition = cond; goToStep(3); }
+        function selectBudget(budget) {
+            leadData.budget = budget;
+            document.getElementById('summary-text').innerText = `${leadData.format} • ${leadData.brand} • ${leadData.budget}`;
+            goToStep(4);
+        }
+
+        const phoneInput = document.getElementById('client-phone');
+        phoneInput.addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
+            if (!x[2] && x[1] !== '') {
+                e.target.value = x[1] === '7' || x[1] === '8' ? '+7 (' : '+7 (' + x[1];
+            } else {
+                e.target.value = !x[3] ? '+7 (' + x[2] : '+7 (' + x[2] + ') ' + x[3] + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
+            }
+        });
+
+        async function submitLead() {
+            const rawPhone = phoneInput.value.trim();
+            if (rawPhone.replace(/\D/g, '').length < 10) {
+                alert('Введите полный номер телефона');
+                return;
+            }
+            leadData.phone = rawPhone;
+
+            const btn = document.getElementById('submit-btn');
+            btn.innerHTML = '<span>Отправляем...</span>';
+            btn.disabled = true;
+
+            const fullLeadInfo = `[${leadData.format}] ${leadData.brand} (${leadData.condition}) — Бюджет: ${leadData.budget}`;
+
+            const { error } = await supabaseClient
+                .from('leads')
+                .insert([{ car_brand: fullLeadInfo, budget: leadData.budget, client_phone: leadData.phone, status: 'new' }]);
+
+            if (error) {
+                alert('Ошибка: ' + error.message);
+                btn.innerHTML = '<span>Оставить заявку</span>';
+                btn.disabled = false;
+                return;
+            }
+
+            ['step-0', 'step-1', 'step-2', 'step-3', 'step-4', 'progress-wrapper'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+            document.getElementById('step-success').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
